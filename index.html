@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Club Amore - Sabina si Ionut</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollToPlugin.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: #000; overflow-x: hidden; font-family: sans-serif; }
+
+        .scroll-wrapper { height: 600vh; } /* Spațiu generos pentru scroll manual */
+
+        .viewport {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100vh;
+            display: flex; align-items: center; justify-content: center;
+            perspective: 1500px;
+        }
+
+        .cover-container {
+            position: absolute;
+            width: 100%; height: 100%;
+            z-index: 20;
+            will-change: transform;
+        }
+
+        .cover-container img { width: 100%; height: 100%; object-fit: cover; }
+
+        .overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            opacity: 0;
+            z-index: 15;
+            pointer-events: none;
+        }
+
+        .cd-flip-card {
+            position: absolute;
+            width: 85vw; height: 85vw;
+            max-width: 450px; max-height: 450px;
+            z-index: 10;
+            transform-style: preserve-3d;
+            will-change: transform;
+        }
+
+        .cd-face {
+            position: absolute;
+            width: 100%; height: 100%;
+            backface-visibility: hidden;
+            border-radius: 50%;
+        }
+
+        .cd-face img { width: 100%; height: 100%; object-fit: contain; border-radius: 50%; }
+        .cd-back { transform: rotateY(180deg); }
+
+        #hint {
+            position: fixed;
+            bottom: 30px;
+            width: 100%;
+            text-align: center;
+            color: white;
+            z-index: 100;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="hint">Se încarcă...</div>
+
+    <div class="scroll-wrapper">
+        <div class="viewport">
+            <div class="overlay" id="bgOverlay"></div>
+            
+            <div class="cd-flip-card" id="cdDisk">
+                <div class="cd-face cd-front">
+                    <img src="fata_cd.png" alt="Fata">
+                </div>
+                <div class="cd-face cd-back">
+                    <img src="spate_cd.png" alt="Spate">
+                </div>
+            </div>
+
+            <div class="cover-container" id="albumCover">
+                <img src="coperta.png" alt="Coperta">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+
+        // Creăm animația principală legată de scroll
+        const tl = gsap.timeline({
+            scrollTrigger: {
+                trigger: ".scroll-wrapper",
+                start: "top top",
+                end: "bottom bottom",
+                scrub: 1.5
+            }
+        });
+
+        tl.to("#albumCover", { y: "15%", duration: 1 }, 0)
+          .to("#cdDisk", { y: "-65%", duration: 1 }, 0)
+          
+          .set("#cdDisk", { zIndex: 30 }, 1)
+          .set("#albumCover", { zIndex: 5 }, 1)
+          
+          .to("#bgOverlay", { opacity: 1, duration: 1 }, 1)
+          .to("#albumCover", { y: "0%", duration: 1 }, 1)
+          .to("#cdDisk", { y: "0%", scale: 1.1, duration: 1 }, 1);
+
+        // PAUZA: Adăugăm un spațiu gol în timeline pentru a opri rotația 1 secundă
+        tl.to({}, { duration: 1.5 }); 
+
+        // ROTAȚIA: Se întâmplă spre finalul scroll-ului
+        tl.to("#cdDisk", { rotateY: 180, duration: 2, ease: "power1.inOut" });
+
+        // AUTO-PLAY la pornire
+        window.addEventListener("load", () => {
+            document.getElementById("hint").innerText = "Prezentarea pornește...";
+            
+            setTimeout(() => {
+                document.getElementById("hint").innerText = "Glisează în sus sau în jos pentru a întoarce CD-ul";
+                
+                // Animăm scroll-ul automat de la 0 la capăt
+                gsap.to(window, {
+                    scrollTo: { y: "max" },
+                    duration: 12, 
+                    ease: "power1.inOut",
+                    overwrite: "auto" // Permite utilizatorului să preia controlul dacă atinge ecranul
+                });
+            }, 2000);
+        });
+    </script>
+</body>
+</html>
